@@ -10,7 +10,7 @@ An end-to-end genomics pipeline for variant identification and candidate gene an
 - Giant Bean Size
 
 ## Data Setup
-GFF3 files are not included due to file size. Place them in `data/gff3/` before running and include the path in app.py file.
+GFF3 files are not included due to file size. Place them in `data/gff3/` before running and include the path in app.py file at line 40-41.
 
 ## Run
 pip install -r requirements.txt

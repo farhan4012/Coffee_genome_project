@@ -716,7 +716,7 @@ def analyze_vcf(filepath: str, filename: str) -> dict:
 
 @app.route("/")
 def index_page():
-    return send_from_directory(".", "index3v2.html")
+    return send_from_directory(".", "index.html")
 
 
 @app.route("/annotation_payload.json")
