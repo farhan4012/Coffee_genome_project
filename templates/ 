@@ -1,0 +1,1197 @@
+<!-- added manhattan plot and lollipop plot 9/5/2026 -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="123.png">
+
+    <!-- AFTER -->
+    <title>Arabica-ID Coffea arabica Variant Annotation</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.75);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.10), 0 1.5px 4px rgba(0, 0, 0, 0.06);
+        }
+
+        .glass-header {
+            background: rgba(255, 255, 255, 0.70);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.80);
+            box-shadow: 0 4px 24px rgba(31, 38, 135, 0.08);
+        }
+
+        .glass-drop {
+            background: rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 2px dashed rgba(16, 185, 129, 0.45);
+        }
+
+        .glass-drop:hover {
+            background: rgba(209, 250, 229, 0.45);
+        }
+
+        tbody tr:hover td {
+            background: rgba(209, 250, 229, 0.35);
+        }
+    </style>
+</head>
+
+<body class="text-gray-800 font-sans p-8 min-h-screen"
+    style="background-image:url('bgimage.png'); background-size:cover; background-position:center; background-attachment:fixed;">
+
+    <div class="fixed inset-0 bg-white/10 pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto">
+        <header class="glass-header mb-8 rounded-2xl px-7 py-5">
+            <!-- AFTER -->
+            <h1 class="text-4xl font-bold text-emerald-800">
+                <div class="tracking-tight">
+                    <img src="logo.png" class="inline-block w-16 h-16 mr-2 align-middle">
+                    Arabica-ID
+                </div>
+                <div class="text-3xl font-bold text-gray-800">Coffea arabica Variant Annotation Pipeline</div>
+
+            </h1>
+            <p class="text-gray-600 text-xl mt-1">
+                Precision breeding tool for <em>Coffea arabica.</em> Tiered trait-locus annotation from VCF file.
+
+            </p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- ── LEFT PANEL: global chart + upload ── -->
+            <div class="lg:col-span-1 glass p-6 rounded-2xl">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">
+                    Global Trait Distribution
+                    <span class="text-sm font-normal text-gray-500">(Click a trait to view detailed analysis)</span>
+                </h2>
+
+                <div class="relative h-64 w-full">
+                    <canvas id="variantChart"></canvas>
+                </div>
+
+                <!-- Dropzone -->
+                <div id="dropzone"
+                    class="glass-drop mt-8 rounded-xl p-6 text-center transition relative cursor-pointer group">
+                    <input type="file" id="fileInput" accept=".vcf,.vcf.gz"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                    <div class="text-gray-500 pointer-events-none">
+                        <svg class="mx-auto h-10 w-10 mb-3 text-gray-400 group-hover:text-emerald-500 transition"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p class="text-sm font-medium">Drag and drop your VCF file here</p>
+                        <p class="text-xs text-gray-400 mt-1">or click to browse (allowed formats: .vcf, .vcf.gz)</p>
+                    </div>
+                </div>
+
+                <div id="progressContainer" class="hidden mt-4">
+                    <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div id="progressBar" class="bg-emerald-600 h-2 rounded-full transition-all duration-300"
+                            style="width:0%"></div>
+                    </div>
+                    <p id="progressText" class="text-sm text-gray-600 mt-2 text-center font-medium">Uploading: 0%</p>
+                </div>
+
+                <!-- Meta summary (shown after analysis) -->
+                <div id="metaPanel" class="hidden mt-6 border-t pt-4 space-y-1 text-xs text-gray-500">
+                    <p><span class="font-semibold text-gray-700">File:</span> <span id="metaFile">—</span></p>
+                    <p><span class="font-semibold text-gray-700">Total variants:</span> <span id="metaTotal">—</span>
+                    </p>
+                    <p><span class="font-semibold text-gray-700">Matched contigs:</span> <span id="metaMatched">—</span>
+                    </p>
+                    <p id="metaUnmatchedRow" class="hidden text-amber-600">
+                        <span class="font-semibold">Unmatched contigs:</span> <span id="metaUnmatched">—</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- ── RIGHT PANEL: tabs ── -->
+            <div class="lg:col-span-2 glass p-6 rounded-2xl flex flex-col">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">Locus Detail Analysis</h2>
+
+                <div id="welcomeMessage" class="text-gray-500 italic">
+                    Upload a VCF file and select a trait from the chart to view advanced analytics.
+                </div>
+
+                <div id="detailPanel" class="hidden flex-grow flex flex-col">
+                    <h3 id="traitTitle" class="text-2xl font-bold text-emerald-700 mb-2"></h3>
+                    <p class="text-sm text-gray-600 mb-4 bg-gray-100 p-3 rounded" id="traitDescription"></p>
+
+                    <!-- Tabs -->
+                    <div class="flex items-center border-b border-gray-200 mb-4">
+                        <button id="tabTableBtn" onclick="switchTab('table')"
+                            class="py-2 px-6 border-b-2 border-emerald-600 text-emerald-700 font-semibold focus:outline-none transition-colors">
+                            Variant Table
+                        </button>
+                        <button id="tabAnalyticsBtn" onclick="switchTab('analytics')"
+                            class="py-2 px-6 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-semibold focus:outline-none transition-colors">
+                            Detailed Analytics
+                        </button>
+                        <div class="ml-auto flex gap-2 pb-0.5">
+                            <button id="btnDownloadCSV" onclick="downloadCSV()"
+                                class="hidden items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded border border-emerald-600 text-emerald-700 hover:bg-emerald-50 transition">
+                                &#11015; Download CSV
+                            </button>
+                            <button id="btnExportReport" onclick="exportAnalyticsReport()"
+                                class="hidden items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded border border-violet-600 text-violet-700 hover:bg-violet-50 transition">
+                                &#11015; Export Analytics Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ── TAB 1: Variant Table ── -->
+                    <div id="tabTableContent" class="overflow-x-auto max-h-[520px] overflow-y-auto block">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50 sticky top-0">
+                                <tr>
+                                    <th
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Chromosome</th>
+                                    <th
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Position</th>
+                                    <th
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Gene ID</th>
+                                    <th
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Ref</th>
+                                    <th
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Alt</th>
+                                    <th
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Evidence</th>
+                                </tr>
+                            </thead>
+                            <tbody id="variantTableBody" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- ── TAB 2: Detailed Analytics ── -->
+                    <div id="tabAnalyticsContent" class="hidden space-y-5">
+
+                        <!-- Row 1: 4 stat pills -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+
+                            <!-- Ti/Tv Ratio -->
+                            <div
+                                class="bg-blue-50 border border-blue-100 rounded-lg p-4 flex flex-col items-center text-center">
+                                <div class="flex items-center gap-1 mb-1">
+                                    <span class="text-xs font-semibold text-blue-700 uppercase tracking-wide">Ti/Tv
+                                        Ratio</span>
+                                    <span class="group relative cursor-help">
+                                        <svg class="w-3.5 h-3.5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        <div
+                                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-60 p-2 bg-gray-800 text-white text-[10px] leading-tight rounded shadow-xl z-50 normal-case font-normal">
+                                            Transition / Transversion ratio for SNPs only (MNPs excluded).<br>
+                                            <span class="text-blue-300">Random DNA ≈ 0.5. Functional sites show 2–3 due
+                                                to purifying selection. Values &gt;2 here suggest enrichment of
+                                                constrained sites within candidate loci.</span>
+                                        </div>
+                                    </span>
+                                </div>
+                                <div class="text-3xl font-bold text-blue-600" id="titvValue">—</div>
+                                <p class="text-[10px] text-blue-500 mt-1">SNPs only · MNPs excluded</p>
+
+                            </div>
+
+                            <!-- Subgenome Bias -->
+                            <div
+                                class="bg-violet-50 border border-violet-100 rounded-lg p-4 flex flex-col items-center text-center">
+                                <div class="flex items-center gap-1 mb-1">
+                                    <span
+                                        class="text-xs font-semibold text-violet-700 uppercase tracking-wide">Subgenome
+                                        Bias</span>
+                                    <span class="group relative cursor-help">
+                                        <svg class="w-3.5 h-3.5 text-violet-400" fill="currentColor"
+                                            viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        <div
+                                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-60 p-2 bg-gray-800 text-white text-[10px] leading-tight rounded shadow-xl z-50 normal-case font-normal">
+                                            (C − E) / (C + E). Range: −1 to +1.<br>
+                                            <span class="text-violet-300">+1 = all variants on C subgenome. −1 = all on
+                                                E. ~0 = balanced. Strong positive values expected for SH3 and lr
+                                                (documented C-subgenome QTLs).</span>
+                                        </div>
+                                    </span>
+                                </div>
+                                <div class="text-3xl font-bold text-violet-600" id="biasValue">—</div>
+                                <p class="text-[10px] text-violet-500 mt-1" id="biasSubtext">C: — · E: —</p>
+                            </div>
+
+                            <!-- High Confidence Fraction -->
+                            <div
+                                class="bg-emerald-50 border border-emerald-100 rounded-lg p-4 flex flex-col items-center text-center">
+                                <div class="flex items-center gap-1 mb-1">
+                                    <span class="text-xs font-semibold text-emerald-700 uppercase tracking-wide">HC
+                                        Fraction</span>
+                                    <span class="group relative cursor-help">
+                                        <svg class="w-3.5 h-3.5 text-emerald-400" fill="currentColor"
+                                            viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        <div
+                                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-60 p-2 bg-gray-800 text-white text-[10px] leading-tight rounded shadow-xl z-50 normal-case font-normal">
+                                            % of variants in Tier 1 (QTL-constrained chromosomal windows).<br>
+                                            <span class="text-emerald-300">Values near 1.0 mean most hits fall inside
+                                                the published QTL interval — strongly validating the annotation. Low
+                                                values indicate mostly serendipitous Discovery-tier hits.</span>
+                                        </div>
+                                    </span>
+                                </div>
+                                <div class="text-3xl font-bold text-emerald-600" id="hcFracValue">—</div>
+                                <p class="text-[10px] text-emerald-600 mt-1" id="hcFracSubtext">High Conf. / Total
+                                    variants</p>
+                            </div>
+
+                            <!-- Density per Mbp -->
+                            <div
+                                class="bg-amber-50 border border-amber-100 rounded-lg p-4 flex flex-col items-center text-center">
+                                <div class="flex items-center gap-1 mb-1">
+                                    <span class="text-xs font-semibold text-amber-700 uppercase tracking-wide">Density /
+                                        Mbp</span>
+                                    <span class="group relative cursor-help">
+                                        <svg class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        <div
+                                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-60 p-2 bg-gray-800 text-white text-[10px] leading-tight rounded shadow-xl z-50 normal-case font-normal">
+                                            Annotated variants per megabase of candidate region.<br>
+                                            <span class="text-amber-300">Normalises for QTL window size — allows fair
+                                                comparison between e.g. SH3 (13 Mb window) and lr (whole chromosome).
+                                                High density = locally diverse or structurally variable locus.</span>
+                                        </div>
+                                    </span>
+                                </div>
+                                <div class="text-3xl font-bold text-amber-600" id="densityMbpValue">—</div>
+                                <p class="text-[10px] text-amber-600 mt-1">variants per Mbp</p>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: 3 secondary stat pills -->
+                        <div class="grid grid-cols-3 gap-3">
+
+                            <!-- Clustered variants -->
+                            <div class="border border-gray-200 rounded-lg p-4 flex flex-col items-center text-center">
+                                <div class="flex items-center gap-1 mb-1">
+                                    <span class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Clustered
+                                        Variants</span>
+                                    <span class="group relative cursor-help">
+                                        <svg class="w-3.5 h-3.5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        <div
+                                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-60 p-2 bg-gray-800 text-white text-[10px] leading-tight rounded shadow-xl z-50 normal-case font-normal">
+                                            Variants within 1 kb of at least one other variant.<br>
+                                            <span class="text-emerald-300">Physically clustered variants may represent:
+                                                a complex allele called as multiple simple events, a gene under recent
+                                                selection pressure, or structural variation in the allotetraploid
+                                                genome. Expected to be high in NBS-LRR clusters.</span>
+                                        </div>
+                                    </span>
+                                </div>
+                                <div class="text-2xl font-bold text-gray-700" id="clusterValue">—</div>
+                                <p class="text-[10px] text-gray-500 mt-1">within 1 kb of another</p>
+                            </div>
+
+                            <!-- Gene Hit Rate -->
+                            <div class="border border-gray-200 rounded-lg p-4 flex flex-col items-center text-center">
+                                <div class="flex items-center gap-1 mb-1">
+                                    <span class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Gene Hit
+                                        Rate</span>
+                                    <span class="group relative cursor-help">
+                                        <svg class="w-3.5 h-3.5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        <div
+                                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-60 p-2 bg-gray-800 text-white text-[10px] leading-tight rounded shadow-xl z-50 normal-case font-normal">
+                                            Unique genes hit / total candidate genes indexed.<br>
+                                            <span class="text-emerald-300">Low values (&lt;0.1) = sparse coverage, most
+                                                candidate genes have no variant in this dataset. High values = broad
+                                                polymorphism across the locus. Proxy for VCF completeness relative to
+                                                locus size.</span>
+                                        </div>
+                                    </span>
+                                </div>
+                                <div class="text-2xl font-bold text-gray-700" id="geneHitValue">—</div>
+                                <p class="text-[10px] text-gray-500 mt-1">unique genes / candidates</p>
+                            </div>
+
+                            <!-- Hotspot genes -->
+                            <div class="border border-gray-200 rounded-lg p-4 flex flex-col items-center text-center">
+                                <div class="flex items-center gap-1 mb-1">
+                                    <span class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Hotspot
+                                        Genes</span>
+                                    <span class="group relative cursor-help">
+                                        <svg class="w-3.5 h-3.5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        <div
+                                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-60 p-2 bg-gray-800 text-white text-[10px] leading-tight rounded shadow-xl z-50 normal-case font-normal">
+                                            Genes harbouring ≥ 3 variants.<br>
+                                            <span class="text-emerald-300">Multi-variant genes represent potential
+                                                haplotype blocks or structurally variable loci. These are the
+                                                highest-priority candidates for functional validation — expand below for
+                                                full list.</span>
+                                        </div>
+                                    </span>
+                                </div>
+                                <div class="text-2xl font-bold text-gray-700" id="hotspotCountValue">—</div>
+                                <p class="text-[10px] text-gray-500 mt-1">genes with ≥ 3 variants</p>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: 2 charts side by side -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                            <!-- Variant Type Chart (SNP / Ins / Del / MNP) -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h4
+                                    class="text-gray-700 font-semibold mb-2 text-sm text-center flex items-center justify-center">
+                                    Variant Type Distribution
+                                    <span class="group relative cursor-help ml-1">
+                                        <svg class="w-3.5 h-3.5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        <div
+                                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-56 p-2 bg-gray-800 text-white text-[10px] leading-tight rounded shadow-xl z-50 normal-case font-normal">
+                                            SNPs: 1-bp substitutions. Insertions/Deletions: length-changing variants.
+                                            MNPs: multi-nucleotide substitutions of equal length — classified separately
+                                            from SNPs and excluded from Ti/Tv.<br>
+                                            <span class="text-emerald-300">Pre-computed server-side — no client-side
+                                                approximation.</span>
+                                        </div>
+                                    </span>
+                                </h4>
+                                <div class="relative h-44 w-full">
+                                    <canvas id="typeChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Subgenome C vs E bar -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h4
+                                    class="text-gray-700 font-semibold mb-2 text-sm text-center flex items-center justify-center">
+                                    Subgenome Partitioning
+                                    <span class="group relative cursor-help ml-1">
+                                        <svg class="w-3.5 h-3.5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        <div
+                                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-60 p-2 bg-gray-800 text-white text-[10px] leading-tight rounded shadow-xl z-50 normal-case font-normal">
+                                            Raw variant counts split by subgenome (C = Coffea canephora-derived, E =
+                                            Coffea eugenioides-derived).<br>
+                                            <span class="text-emerald-300">Asymmetry reflects subgenome-level
+                                                differences in gene content, epigenetic silencing, or coverage. C-bias
+                                                expected for traits with C-subgenome QTLs.</span>
+                                        </div>
+                                    </span>
+                                </h4>
+                                <div class="relative h-44 w-full">
+                                    <canvas id="subgenomeChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Row 4: Chromosomal density (full width) -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h4
+                                class="text-gray-700 font-semibold mb-2 text-sm text-center flex items-center justify-center">
+                                Variant Count per Chromosome
+                                <span class="group relative cursor-help ml-1">
+                                    <svg class="w-3.5 h-3.5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                    <div
+                                        class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-56 p-2 bg-gray-800 text-white text-[10px] leading-tight rounded shadow-xl z-50 normal-case font-normal">
+                                        Raw variant hit count grouped by chromosome. C and E subgenome chromosomes are
+                                        colour-coded for rapid visual comparison.
+                                    </div>
+                                </span>
+                            </h4>
+                            <div class="relative h-44 w-full">
+                                <canvas id="densityChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Row 5: Evidence tier + hotspot gene list -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                            <!-- Tier breakdown -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h4 class="text-gray-700 font-semibold mb-3 text-sm text-center">Evidence Tier Breakdown
+                                </h4>
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="font-medium text-emerald-700 flex items-center gap-1">
+                                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                            High Confidence (Tier 1)
+                                        </span>
+                                        <span id="hcCount" class="font-bold text-gray-700">—</span>
+                                    </div>
+                                    <div class="w-full bg-gray-100 rounded-full h-2">
+                                        <div id="hcBar" class="bg-emerald-500 h-2 rounded-full transition-all"
+                                            style="width:0%"></div>
+                                    </div>
+                                    <p class="text-[10px] text-gray-400">Gene within published QTL chromosomal window
+                                        AND matches functional keyword</p>
+
+                                    <div class="flex items-center justify-between text-xs mt-3">
+                                        <span class="font-medium text-blue-600 flex items-center gap-1">
+                                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+                                            Discovery (Tier 2)
+                                        </span>
+                                        <span id="discCount" class="font-bold text-gray-700">—</span>
+                                    </div>
+                                    <div class="w-full bg-gray-100 rounded-full h-2">
+                                        <div id="discBar" class="bg-blue-400 h-2 rounded-full transition-all"
+                                            style="width:0%"></div>
+                                    </div>
+                                    <p class="text-[10px] text-gray-400">Genome-wide match to highly specific trait
+                                        identifier — no QTL zone constraint</p>
+                                </div>
+                            </div>
+
+                            <!-- Hotspot gene list -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h4 class="text-gray-700 font-semibold mb-2 text-sm text-center">Hotspot Gene List <span
+                                        class="font-normal text-gray-400">(≥ 3 variants)</span></h4>
+                                <div id="hotspotList" class="space-y-1 max-h-36 overflow-y-auto text-xs">
+                                    <p class="text-gray-400 italic text-center">No hotspot genes for this trait.</p>
+                                </div>
+                                <p class="text-[10px] text-gray-400 mt-2">These are highest-priority functional
+                                    validation candidates — multi-variant genes may harbour complex alleles or
+                                    structural variants.</p>
+                            </div>
+                        </div>
+                        <!-- Advanced Genomic Plots toggle header -->
+                        <div class="flex items-center justify-between mt-6 mb-1">
+                            <div>
+                                <span class="text-sm font-semibold text-gray-600">Advanced Genomic Plots</span>
+                                <span class="ml-2 text-xs text-gray-400">Manhattan &amp; Lollipop</span>
+                            </div>
+                            <button id="advancedToggleBtn" onclick="toggleAdvancedCharts()"
+                                title="Toggle advanced plots"
+                                class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-300 text-xs font-semibold text-gray-500 bg-white hover:bg-gray-50 transition-all duration-200 select-none">
+                                <span id="advancedToggleTrack"
+                                    class="relative inline-block w-8 h-4 rounded-full bg-gray-200 transition-colors duration-200">
+                                    <span id="advancedToggleThumb"
+                                        class="absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white shadow transition-all duration-200"></span>
+                                </span>
+                                <span id="advancedToggleLabel">Off</span>
+                            </button>
+                        </div>
+
+                        <!-- Collapsible advanced plots section (hidden by default) -->
+                        <div id="advancedChartsSection" class="overflow-hidden transition-all duration-300" style="max-height:0; opacity:0; pointer-events:none">
+
+                            <!-- Manhattan Plot -->
+                            <div class="border border-indigo-100 rounded-lg p-4 mt-3 bg-indigo-50/30">
+                                <h4 class="text-gray-700 font-semibold mb-1 text-sm">
+                                    Variant Position Map &mdash; All Chromosomes (Manhattan View)
+                                    <span class="text-xs font-normal text-gray-400 ml-1">&middot; coloured by subgenome &middot; red = hotspot gene</span>
+                                </h4>
+                                <p class="text-xs text-gray-400 mb-3">Each point is one variant. X&nbsp;= position within chromosome, grouped by chromosome. Hover for details.</p>
+                                <div class="relative w-full" style="height:220px">
+                                    <canvas id="manhattanChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Lollipop Plot -->
+                            <div class="border border-violet-100 rounded-lg p-4 mt-3 bg-violet-50/30">
+                                <h4 class="text-gray-700 font-semibold mb-1 text-sm">
+                                    Lollipop Plot &mdash; Variant Positions on Candidate Genes
+                                    <span class="text-xs font-normal text-gray-400 ml-1">&middot; hotspot genes in red</span>
+                                </h4>
+                                <p class="text-xs text-gray-400 mb-2">X&nbsp;= genomic position. Stem height stacks when multiple variants hit the same gene.</p>
+                                <div id="lollipopPlot" class="w-full overflow-x-auto" style="min-height:180px"></div>
+                            </div>
+
+                        </div><!-- end advancedChartsSection -->
+
+
+                    </div><!-- end tabAnalyticsContent -->
+                </div><!-- end detailPanel -->
+            </div><!-- end right panel -->
+        </div>
+    </div>
+
+    <script>
+        // ── Global State ──────────────────────────────────────────────────────
+        let mainChartInstance = null;
+        let typeChartInstance = null;
+        let subgenomeChartInstance = null;
+        let densityChartInstance = null;
+        let manhattanChartInstance = null;
+        let advancedChartsEnabled = false;
+
+        let globalVariantData = null;
+        let globalSummaryData = null;
+        let globalAnalyticsData = null;   // NEW: server-computed analytics
+        let currentTrait = null;
+
+        // ── Drag & Drop ───────────────────────────────────────────────────────
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+
+        dropzone.addEventListener('dragover', e => {
+            e.preventDefault();
+            dropzone.classList.add('border-emerald-500', 'bg-emerald-50');
+        });
+        dropzone.addEventListener('dragleave', e => {
+            e.preventDefault();
+            dropzone.classList.remove('border-emerald-500', 'bg-emerald-50');
+        });
+        dropzone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropzone.classList.remove('border-emerald-500', 'bg-emerald-50');
+            if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', e => {
+            if (e.target.files.length > 0) handleFile(e.target.files[0]);
+        });
+
+        // ── Upload & Analysis ─────────────────────────────────────────────────
+        function handleFile(file) {
+            const formData = new FormData();
+            formData.append('vcf', file);
+
+            const xhr = new XMLHttpRequest();
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+
+            progressContainer.classList.remove('hidden');
+            progressBar.style.width = '0%';
+            progressBar.className = 'bg-emerald-600 h-2 rounded-full transition-all duration-300';
+            progressText.innerText = 'Uploading: 0%';
+            progressText.className = 'text-sm mt-2 text-center font-medium text-gray-600';
+
+            xhr.open('POST', '/api/analyze', true);
+
+            xhr.upload.onprogress = e => {
+                if (e.lengthComputable) {
+                    const pct = Math.round((e.loaded / e.total) * 100);
+                    progressBar.style.width = pct + '%';
+                    progressText.innerText = `Uploading: ${pct}%`;
+                }
+            };
+
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    progressBar.style.width = '100%';
+                    progressText.innerText = '✓ Analysis complete';
+                    progressText.className = 'text-sm mt-2 text-center font-medium text-emerald-600';
+
+                    const data = JSON.parse(xhr.responseText);
+
+                    globalVariantData = data.variants;
+                    globalSummaryData = data.traitSummary;
+                    globalAnalyticsData = data.analytics || {};   // ← server-computed
+
+                    renderMainChart(data.counts);
+                    renderMeta(data.meta);
+
+                    document.getElementById('welcomeMessage').classList.remove('hidden');
+                    document.getElementById('welcomeMessage').innerText =
+                        'Analysis complete. Click a trait segment in the donut chart to view detailed results.';
+                    document.getElementById('detailPanel').classList.add('hidden');
+                    fileInput.value = '';
+                } else {
+                    progressBar.classList.replace('bg-emerald-600', 'bg-red-500');
+                    progressText.innerText = '❌ Analysis failed.';
+                    progressText.className = 'text-sm mt-2 text-center font-medium text-red-500';
+                }
+            };
+
+            xhr.onerror = () => {
+                progressText.innerText = '❌ Unsupported Format.';
+                progressText.className = 'text-sm mt-2 text-center font-medium text-red-500';
+            };
+
+            xhr.send(formData);
+        }
+
+        // ── Meta panel ────────────────────────────────────────────────────────
+        function renderMeta(meta) {
+            if (!meta) return;
+            document.getElementById('metaPanel').classList.remove('hidden');
+            document.getElementById('metaFile').innerText = meta.sourceFile || '—';
+            document.getElementById('metaTotal').innerText = (meta.totalVariants || 0).toLocaleString();
+            document.getElementById('metaMatched').innerText = (meta.matchedContigs || []).join(', ') || 'None';
+            if (meta.unmatchedContigs && meta.unmatchedContigs.length > 0) {
+                document.getElementById('metaUnmatchedRow').classList.remove('hidden');
+                document.getElementById('metaUnmatched').innerText = meta.unmatchedContigs.length + ' contigs';
+            }
+        }
+
+        // ── Tab Switching ─────────────────────────────────────────────────────
+        function switchTab(tabName) {
+            const tableBtn = document.getElementById('tabTableBtn');
+            const analyticsBtn = document.getElementById('tabAnalyticsBtn');
+            const tableContent = document.getElementById('tabTableContent');
+            const analyticsContent = document.getElementById('tabAnalyticsContent');
+
+            const activeClass = 'py-2 px-6 border-b-2 border-emerald-600 text-emerald-700 font-semibold focus:outline-none transition-colors';
+            const inactiveClass = 'py-2 px-6 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-semibold focus:outline-none transition-colors';
+
+            if (tabName === 'table') {
+                tableBtn.className = activeClass;
+                analyticsBtn.className = inactiveClass;
+                tableContent.classList.remove('hidden');
+                analyticsContent.classList.add('hidden');
+            } else {
+                analyticsBtn.className = activeClass;
+                tableBtn.className = inactiveClass;
+                analyticsContent.classList.remove('hidden');
+                tableContent.classList.add('hidden');
+                // Re-render charts after un-hiding so canvas sizes correctly
+                if (currentTrait) renderAnalytics(currentTrait);
+            }
+        }
+
+        // ── Main donut chart ──────────────────────────────────────────────────
+        function renderMainChart(counts) {
+            const ctx = document.getElementById('variantChart').getContext('2d');
+            if (mainChartInstance) mainChartInstance.destroy();
+
+            const labels = Object.keys(counts);
+            const values = Object.values(counts);
+            const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'];
+
+            mainChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels,
+                    datasets: [{ data: values, backgroundColor: colors, borderWidth: 1 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            currentTrait = labels[elements[0].index];
+                            showDetails(currentTrait);
+                        }
+                    }
+                }
+            });
+        }
+
+        // ── Locus detail: table + analytics ──────────────────────────────────
+        function showDetails(traitName) {
+            document.getElementById('welcomeMessage').classList.add('hidden');
+            document.getElementById('detailPanel').classList.remove('hidden');
+
+            document.getElementById('traitTitle').innerText = traitName;
+            const summary = globalSummaryData?.[traitName];
+            document.getElementById('traitDescription').innerText =
+                summary ? summary.description : 'Annotated locus.';
+
+            // Populate variant table
+            const tbody = document.getElementById('variantTableBody');
+            const variants = globalVariantData?.[traitName] || [];
+            tbody.innerHTML = '';
+
+            if (variants.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">No variants found in candidate regions for this trait.</td></tr>`;
+            } else {
+                variants.forEach(v => {
+                    const kwRaw = (v.matchedKeywords || [''])[0];
+                    const isHC = kwRaw.includes('High Confidence');
+                    const kwDisplay = kwRaw.replace(/\s*\(.*?\)/, '');
+                    const tierBadge = isHC
+                        ? `<span class="px-1.5 py-0.5 text-[10px] bg-emerald-100 text-emerald-700 rounded font-semibold">HC</span>`
+                        : `<span class="px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-600 rounded font-semibold">D</span>`;
+                    tbody.innerHTML += `<tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${v.chromosome}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${v.position.toLocaleString()}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-blue-600 font-mono text-xs">${v.geneId}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${v.reference}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-bold text-emerald-600">${v.alternate}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-xs text-gray-500">${tierBadge} ${kwDisplay}</td>
+                    </tr>`;
+                });
+            }
+
+            // Render analytics (reads from server data, no client-side recomputation)
+            showExportButtons();
+            renderAnalytics(traitName);
+        }
+
+        // ── Detailed Analytics ────────────────────────────────────────────────────
+        // ALL metrics are read from globalAnalyticsData[traitName] (server-computed).
+        // Client side only handles rendering: Chart.js draws, DOM gets values.
+
+        function renderAnalytics(traitName) {
+            const a = globalAnalyticsData?.[traitName];
+            const variants = globalVariantData?.[traitName] || [];
+            if (!a) return;
+
+            // ── Stat pills ─────────────────────────────────────────────────
+
+            // Ti/Tv
+            document.getElementById('titvValue').innerText =
+                a.tiTvRatio !== null ? a.tiTvRatio : 'N/A';
+
+            // Subgenome Bias
+            document.getElementById('biasValue').innerText =
+                a.subgenomeBias !== null ? a.subgenomeBias.toFixed(3) : 'N/A';
+            const sg = a.subgenomeCounts || { C: 0, E: 0 };
+            document.getElementById('biasSubtext').innerText = `C: ${sg.C} · E: ${sg.E}`;
+
+            // High Confidence Fraction
+            document.getElementById('hcFracValue').innerText =
+                a.highConfFraction !== null ? (a.highConfFraction * 100).toFixed(1) + '%' : 'N/A';
+            const hcCount = (a.tierCounts || {})['High Confidence'] || 0;
+            const discCount = (a.tierCounts || {})['Discovery'] || 0;
+            const total = hcCount + discCount;
+            document.getElementById('hcFracSubtext').innerText =
+                `${hcCount} HC · ${discCount} Discovery`;
+
+            // Density per Mbp
+            document.getElementById('densityMbpValue').innerText =
+                a.variantDensityPerMbp !== null ? a.variantDensityPerMbp : 'N/A';
+
+            // Cluster count
+            document.getElementById('clusterValue').innerText = a.clusterCount ?? '—';
+
+            // Gene hit rate
+            document.getElementById('geneHitValue').innerText =
+                a.geneHitRate !== null ? (a.geneHitRate * 100).toFixed(2) + '%' : 'N/A';
+
+            // Hotspot gene count
+            const hotspots = a.hotspotGenes || [];
+            document.getElementById('hotspotCountValue').innerText = hotspots.length;
+
+            // ── Evidence tier progress bars ────────────────────────────────
+            document.getElementById('hcCount').innerText = hcCount;
+            document.getElementById('discCount').innerText = discCount;
+            const hcPct = total > 0 ? (hcCount / total * 100).toFixed(1) : 0;
+            const discPct = total > 0 ? (discCount / total * 100).toFixed(1) : 0;
+            document.getElementById('hcBar').style.width = hcPct + '%';
+            document.getElementById('discBar').style.width = discPct + '%';
+
+            // ── Hotspot gene list ──────────────────────────────────────────
+            const listEl = document.getElementById('hotspotList');
+            if (hotspots.length === 0) {
+                listEl.innerHTML = '<p class="text-gray-400 italic text-center">No hotspot genes for this trait.</p>';
+            } else {
+                listEl.innerHTML = hotspots.map(g =>
+                    `<div class="flex items-center gap-2 py-1 border-b border-gray-100 last:border-0">
+                        <span class="w-2 h-2 rounded-full bg-red-400 flex-shrink-0"></span>
+                        <span class="font-mono text-blue-600">${g}</span>
+                     </div>`
+                ).join('');
+            }
+
+            // ── Chart 1: Variant type pie ──────────────────────────────────
+            const typeCtx = document.getElementById('typeChart').getContext('2d');
+            if (typeChartInstance) typeChartInstance.destroy();
+            typeChartInstance = new Chart(typeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['SNPs', 'Insertions', 'Deletions', 'MNPs'],
+                    datasets: [{
+                        data: [a.snpCount || 0, a.insertionCount || 0, a.deletionCount || 0, a.mnpCount || 0],
+                        backgroundColor: ['#3b82f6', '#10b981', '#ef4444', '#f59e0b'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } }
+                }
+            });
+
+            // ── Chart 2: Subgenome bar ─────────────────────────────────────
+            const sgCtx = document.getElementById('subgenomeChart').getContext('2d');
+            if (subgenomeChartInstance) subgenomeChartInstance.destroy();
+            subgenomeChartInstance = new Chart(sgCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['C subgenome\n(C. canephora)', 'E subgenome\n(C. eugenioides)'],
+                    datasets: [{
+                        label: 'Variants',
+                        data: [sg.C, sg.E],
+                        backgroundColor: ['#6366f1', '#a78bfa'],
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } } }
+                }
+            });
+
+            // ── Chart 3: Chromosomal density bar ──────────────────────────
+            const chromCounts = {};
+            variants.forEach(v => {
+                chromCounts[v.chromosome] = (chromCounts[v.chromosome] || 0) + 1;
+            });
+            const sortedChroms = Object.keys(chromCounts).sort();
+            const chromColors = sortedChroms.map(c =>
+                c.endsWith('C') ? '#6366f1' : '#a78bfa'
+            );
+
+            const densityCtx = document.getElementById('densityChart').getContext('2d');
+            if (densityChartInstance) densityChartInstance.destroy();
+            densityChartInstance = new Chart(densityCtx, {
+                type: 'bar',
+                data: {
+                    labels: sortedChroms,
+                    datasets: [{
+                        label: 'Variants',
+                        data: sortedChroms.map(c => chromCounts[c]),
+                        backgroundColor: chromColors,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                afterLabel: ctx => ctx.label.endsWith('C') ? 'C subgenome' : 'E subgenome'
+                            }
+                        }
+                    },
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } } }
+                }
+            });
+
+            // Render advanced plots if toggle is ON
+            if (advancedChartsEnabled) renderAdvancedCharts(traitName);
+        }
+
+        // ── Toggle Advanced Plots ─────────────────────────────────────────────
+        function toggleAdvancedCharts() {
+            advancedChartsEnabled = !advancedChartsEnabled;
+            const section = document.getElementById('advancedChartsSection');
+            const track   = document.getElementById('advancedToggleTrack');
+            const thumb   = document.getElementById('advancedToggleThumb');
+            const label   = document.getElementById('advancedToggleLabel');
+
+            if (advancedChartsEnabled) {
+                section.style.maxHeight  = '800px';
+                section.style.opacity    = '1';
+                section.style.pointerEvents = 'auto';
+                track.classList.replace('bg-gray-200', 'bg-indigo-500');
+                thumb.style.transform    = 'translateX(16px)';
+                label.innerText          = 'On';
+                label.classList.replace('text-gray-500', 'text-indigo-600');
+                if (currentTrait) renderAdvancedCharts(currentTrait);
+            } else {
+                section.style.maxHeight  = '0';
+                section.style.opacity    = '0';
+                section.style.pointerEvents = 'none';
+                track.classList.replace('bg-indigo-500', 'bg-gray-200');
+                thumb.style.transform    = 'translateX(0)';
+                label.innerText          = 'Off';
+                label.classList.replace('text-indigo-600', 'text-gray-500');
+                if (manhattanChartInstance) { manhattanChartInstance.destroy(); manhattanChartInstance = null; }
+                document.getElementById('lollipopPlot').innerHTML = '';
+            }
+        }
+
+        // ── Advanced Charts Renderer (Manhattan + Lollipop) ───────────────────
+        function renderAdvancedCharts(traitName) {
+            const a        = globalAnalyticsData?.[traitName];
+            const variants = globalVariantData?.[traitName] || [];
+            if (!a) return;
+
+            const hotspotSet = new Set(a.hotspotGenes || []);
+
+            // ── Manhattan (Chart.js scatter) ───────────────────────────────
+            {
+                const chromOrder = [...new Set(variants.map(v => v.chromosome))].sort();
+                const SPAN = 1000, GAP = 120;
+                const chromRanges = {}, offsets = {};
+                let cum = 0;
+                chromOrder.forEach(c => {
+                    const ps = variants.filter(v => v.chromosome === c).map(v => v.position);
+                    chromRanges[c] = { min: Math.min(...ps), max: Math.max(...ps) };
+                    offsets[c] = cum;
+                    cum += SPAN + GAP;
+                });
+                const scatterPts = variants.map(v => {
+                    const { min, max } = chromRanges[v.chromosome];
+                    const nx = offsets[v.chromosome] + (max > min ? ((v.position - min) / (max - min)) * SPAN : SPAN / 2);
+                    return { x: nx, y: 0.5 + Math.random() * 0.5, position: v.position, geneId: v.geneId, chromosome: v.chromosome };
+                });
+                const ptColors = variants.map(v =>
+                    hotspotSet.has(v.geneId) ? 'rgba(239,68,68,0.85)' :
+                    v.chromosome.endsWith('C') ? 'rgba(99,102,241,0.8)' : 'rgba(167,139,250,0.8)'
+                );
+                const manhCtx = document.getElementById('manhattanChart').getContext('2d');
+                if (manhattanChartInstance) manhattanChartInstance.destroy();
+                manhattanChartInstance = new Chart(manhCtx, {
+                    type: 'scatter',
+                    data: { datasets: [{ data: scatterPts, backgroundColor: ptColors, pointRadius: 5, pointHoverRadius: 8, pointBorderWidth: 0 }] },
+                    options: {
+                        responsive: true, maintainAspectRatio: false, animation: { duration: 500 },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { callbacks: { label: ctx => { const d = ctx.raw; return [`Chr: ${d.chromosome}`, `Pos: ${d.position.toLocaleString()}`, `Gene: ${d.geneId}`]; } } }
+                        },
+                        scales: {
+                            x: {
+                                type: 'linear', min: 0, max: cum,
+                                afterBuildTicks: axis => { axis.ticks = chromOrder.map(c => ({ value: offsets[c] + SPAN / 2 })); },
+                                ticks: { callback: val => chromOrder.find(c => Math.abs(val - (offsets[c] + SPAN / 2)) < 1) || '', font: { size: 9 }, maxRotation: 45, minRotation: 30 },
+                                grid: { color: 'rgba(0,0,0,0.04)' }
+                            },
+                            y: { display: false, min: 0, max: 1.8 }
+                        }
+                    }
+                });
+            }
+
+            // ── Lollipop (SVG) ─────────────────────────────────────────────
+            {
+                const lollipopEl = document.getElementById('lollipopPlot');
+                if (!variants.length) {
+                    lollipopEl.innerHTML = '<p class="text-gray-400 italic text-center pt-10">No variants to display.</p>';
+                } else {
+                    const allPos = variants.map(v => v.position);
+                    const minPos = Math.min(...allPos), maxPos = Math.max(...allPos);
+                    const W = lollipopEl.clientWidth || 680;
+                    const H = 200, PL = 10, PR = 10, PT = 30, PB = 48;
+                    const plotW = W - PL - PR, plotH = H - PT - PB;
+                    const baseY = PT + plotH;
+                    const xOf = pos => (maxPos === minPos) ? PL + plotW / 2 : PL + ((pos - minPos) / (maxPos - minPos)) * plotW;
+                    const geneIdx = {};
+                    const lollipops = variants.map(v => {
+                        geneIdx[v.geneId] = (geneIdx[v.geneId] || 0) + 1;
+                        const isHot = hotspotSet.has(v.geneId);
+                        const color = isHot ? '#ef4444' : (v.chromosome.endsWith('C') ? '#6366f1' : '#a78bfa');
+                        return { x: xOf(v.position), baseY, tipY: baseY - plotH * (0.3 + geneIdx[v.geneId] * 0.13), color, isHot, geneId: v.geneId, chromosome: v.chromosome, position: v.position };
+                    });
+                    const geneCentroid = {};
+                    variants.forEach(v => {
+                        if (!geneCentroid[v.geneId]) geneCentroid[v.geneId] = [];
+                        geneCentroid[v.geneId].push(xOf(v.position));
+                    });
+                    const numTicks = Math.min(5, variants.length);
+                    const tickStep = (maxPos - minPos) / Math.max(numTicks - 1, 1);
+                    const fmtPos = p => p >= 1e6 ? (p/1e6).toFixed(1)+'M' : p >= 1e3 ? (p/1e3).toFixed(0)+'k' : String(p);
+                    let svg = `<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="font-family:sans-serif;overflow:visible">`;
+                    svg += `<line x1="${PL}" y1="${baseY}" x2="${PL+plotW}" y2="${baseY}" stroke="#d1d5db" stroke-width="1.5"/>`;
+                    for (let i = 0; i < numTicks; i++) {
+                        const tp = minPos + i * tickStep, tx = xOf(tp);
+                        svg += `<line x1="${tx}" y1="${baseY}" x2="${tx}" y2="${baseY+5}" stroke="#9ca3af" stroke-width="1"/>`;
+                        svg += `<text x="${tx}" y="${baseY+17}" text-anchor="middle" font-size="9" fill="#9ca3af">${fmtPos(Math.round(tp))}</text>`;
+                    }
+                    svg += `<text x="${PL+plotW/2}" y="${H-4}" text-anchor="middle" font-size="10" fill="#6b7280">Genomic Position</text>`;
+                    lollipops.forEach(lp => {
+                        svg += `<line x1="${lp.x}" y1="${lp.baseY}" x2="${lp.x}" y2="${lp.tipY}" stroke="${lp.color}" stroke-width="${lp.isHot?2:1.5}" opacity="0.8"/>`;
+                        svg += `<circle cx="${lp.x}" cy="${lp.tipY}" r="${lp.isHot?5.5:4}" fill="${lp.color}" opacity="0.9"><title>${lp.geneId} | ${lp.chromosome} | ${lp.position.toLocaleString()}</title></circle>`;
+                    });
+                    const labeled = new Set();
+                    lollipops.filter(lp => lp.isHot && !labeled.has(lp.geneId)).forEach(lp => {
+                        labeled.add(lp.geneId);
+                        const cx = geneCentroid[lp.geneId].reduce((s,x)=>s+x,0)/geneCentroid[lp.geneId].length;
+                        svg += `<text x="${cx}" y="${PT+8}" text-anchor="middle" font-size="8" fill="#ef4444" font-weight="600">${lp.geneId}</text>`;
+                    });
+                    svg += '</svg>';
+                    lollipopEl.innerHTML = svg;
+                }
+            }
+        }
+
+        function showExportButtons() {
+            document.getElementById('btnDownloadCSV').classList.remove('hidden');
+            document.getElementById('btnDownloadCSV').classList.add('inline-flex');
+            document.getElementById('btnExportReport').classList.remove('hidden');
+            document.getElementById('btnExportReport').classList.add('inline-flex');
+        }
+
+        function downloadCSV() {
+            const variants = globalVariantData[currentTrait] || [];
+            if (!variants.length) return;
+            const header = ['Chromosome', 'Position', 'Gene ID', 'Reference', 'Alternate', 'Matched Keywords'];
+            const rows = variants.map(v => [
+                v.chromosome,
+                v.position,
+                v.geneId,
+                v.reference,
+                v.alternate,
+                (v.matchedKeywords || []).join('; ')
+            ].map(cell => `"${String(cell).replace(/"/g, '""')}"`));
+            const csv = [header, ...rows].map(r => r.join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `variants_${currentTrait.replace(/[^a-z0-9]/gi, '_')}.csv`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+
+        function exportAnalyticsReport() {
+            const a = globalAnalyticsData ? globalAnalyticsData[currentTrait] : null;
+            const s = globalSummaryData ? globalSummaryData[currentTrait] : null;
+            const variants = globalVariantData ? (globalVariantData[currentTrait] || []) : [];
+            const ts = new Date().toLocaleString();
+            const v = (val, unit = '') => (val !== null && val !== undefined) ? `${val}${unit}` : 'N/A';
+
+            const hotspots = a ? (a.hotspotGenes || []) : [];
+            const hotspotRows = hotspots.length
+                ? hotspots.map(g => `<tr><td style="font-family:monospace;color:#1d4ed8;padding:4px 10px">${g}</td><td style="padding:4px 10px;color:#6b7280">&#x2265;3 variants</td></tr>`).join('')
+                : '<tr><td colspan="2" style="padding:6px 10px;color:#9ca3af;font-style:italic">None detected</td></tr>';
+
+            const tc = a ? (a.tierCounts || {}) : {};
+            const hcN = tc['High Confidence'] || 0;
+            const discN = tc['Discovery'] || 0;
+            const posN = tc['Positional'] || 0;
+            const totT = hcN + discN + posN || 1;
+            const sg = a ? (a.subgenomeCounts || { C: 0, E: 0 }) : { C: 0, E: 0 };
+            const sgTot = (sg.C + sg.E) || 1;
+
+            const html = `<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>Detailed Analytics Report — ${currentTrait}</title>
+<style>
+  body{font-family:Calibri,Arial,sans-serif;max-width:860px;margin:40px auto;color:#1f2937;background:#f9fafb;padding:0 24px}
+  h1{color:#1e3d2f;border-bottom:3px solid #2d6a4f;padding-bottom:8px;font-size:22px}
+  h2{color:#2d6a4f;font-size:15px;margin-top:28px;margin-bottom:8px}
+  .meta{font-size:11px;color:#6b7280;margin-bottom:24px}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+  .card{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px;text-align:center}
+  .card .num{font-size:26px;font-weight:700}
+  .card .lbl{font-size:10px;color:#6b7280;margin-top:4px}
+  .card .sub{font-size:9px;color:#9ca3af;margin-top:2px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+  .box{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px}
+  .box h3{font-size:12px;font-weight:600;color:#374151;margin:0 0 10px}
+  table{border-collapse:collapse;width:100%;font-size:12px}
+  th{background:#2d6a4f;color:#fff;padding:6px 10px;text-align:left}
+  td{border-bottom:1px solid #f3f4f6;padding:5px 10px}
+  tr:nth-child(even) td{background:#f9fafb}
+  .bar-track{background:#e5e7eb;border-radius:4px;height:10px;margin:4px 0 2px}
+  .bar-fill{height:10px;border-radius:4px}
+  .pill{display:inline-block;font-size:9px;font-weight:700;padding:2px 7px;border-radius:99px;margin-right:4px}
+  .hc{background:#d1fae5;color:#065f46}
+  .disc{background:#dbeafe;color:#1e40af}
+  .pos{background:#fef3c7;color:#92400e}
+  footer{margin-top:40px;font-size:9px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:10px}
+</style></head><body>
+<h1>Detailed Analytics Report</h1>
+<div class="meta">
+  Trait: <strong>${currentTrait}</strong> &nbsp;|&nbsp;
+  Generated: ${ts} &nbsp;|&nbsp;
+  Variants in locus: <strong>${variants.length}</strong> &nbsp;|&nbsp;
+  Candidate genes: <strong>${s ? s.candidateGenes : 'N/A'}</strong>
+</div>
+
+<h2>Key Metrics</h2>
+<div class="grid4">
+  <div class="card"><div class="num" style="color:#2563eb">${v(a && a.tiTvRatio)}</div><div class="lbl">Ti/Tv Ratio</div><div class="sub">SNPs only</div></div>
+  <div class="card"><div class="num" style="color:#7c3aed">${v(a && a.subgenomeBias)}</div><div class="lbl">Subgenome Bias</div><div class="sub">(C−E)/(C+E)</div></div>
+  <div class="card"><div class="num" style="color:#059669">${a && a.highConfFraction !== null ? (a.highConfFraction * 100).toFixed(1) + '%' : 'N/A'}</div><div class="lbl">HC Fraction</div><div class="sub">Tier 1 variants</div></div>
+  <div class="card"><div class="num" style="color:#d97706">${v(a && a.variantDensityPerMbp)}</div><div class="lbl">Density / Mbp</div><div class="sub">variants per Mbp</div></div>
+</div>
+<div class="grid4">
+  <div class="card"><div class="num">${v(a && a.clusterCount)}</div><div class="lbl">Clustered Variants</div><div class="sub">within 1 kb</div></div>
+  <div class="card"><div class="num">${a && a.geneHitRate !== null ? (a.geneHitRate * 100).toFixed(2) + '%' : 'N/A'}</div><div class="lbl">Gene Hit Rate</div><div class="sub">unique genes hit</div></div>
+  <div class="card"><div class="num">${hotspots.length}</div><div class="lbl">Hotspot Genes</div><div class="sub">&#x2265;3 variants</div></div>
+  <div class="card"><div class="num">${v(a && a.snpCount)}</div><div class="lbl">SNP Count</div><div class="sub">1-bp substitutions</div></div>
+</div>
+
+<div class="grid2">
+  <div class="box">
+    <h3>Variant Type Breakdown</h3>
+    <table>
+      <tr><th>Type</th><th>Count</th></tr>
+      <tr><td>SNPs</td><td>${v(a && a.snpCount)}</td></tr>
+      <tr><td>Insertions</td><td>${v(a && a.insertionCount)}</td></tr>
+      <tr><td>Deletions</td><td>${v(a && a.deletionCount)}</td></tr>
+      <tr><td>MNPs</td><td>${v(a && a.mnpCount)}</td></tr>
+    </table>
+  </div>
+  <div class="box">
+    <h3>Subgenome Partitioning</h3>
+    <div style="font-size:12px;margin-bottom:4px">C subgenome: <strong>${sg.C}</strong> (${(sg.C / sgTot * 100).toFixed(1)}%)</div>
+    <div class="bar-track"><div class="bar-fill" style="width:${(sg.C / sgTot * 100).toFixed(1)}%;background:#2d6a4f"></div></div>
+    <div style="font-size:12px;margin:8px 0 4px">E subgenome: <strong>${sg.E}</strong> (${(sg.E / sgTot * 100).toFixed(1)}%)</div>
+    <div class="bar-track"><div class="bar-fill" style="width:${(sg.E / sgTot * 100).toFixed(1)}%;background:#d97706"></div></div>
+    <div style="font-size:10px;color:#6b7280;margin-top:8px">Bias index: <strong>${v(a && a.subgenomeBias)}</strong> &nbsp;(+1 = all C, −1 = all E)</div>
+  </div>
+</div>
+
+<div class="grid2">
+  <div class="box">
+    <h3>Evidence Tier Breakdown</h3>
+    <div style="font-size:12px;margin-bottom:4px"><span class="pill hc">High Confidence</span> ${hcN} (${(hcN / totT * 100).toFixed(1)}%)</div>
+    <div class="bar-track"><div class="bar-fill" style="width:${(hcN / totT * 100).toFixed(1)}%;background:#059669"></div></div>
+    <div style="font-size:12px;margin:8px 0 4px"><span class="pill disc">Discovery</span> ${discN} (${(discN / totT * 100).toFixed(1)}%)</div>
+    <div class="bar-track"><div class="bar-fill" style="width:${(discN / totT * 100).toFixed(1)}%;background:#2563eb"></div></div>
+    <div style="font-size:12px;margin:8px 0 4px"><span class="pill pos">Positional</span> ${posN} (${(posN / totT * 100).toFixed(1)}%)</div>
+    <div class="bar-track"><div class="bar-fill" style="width:${(posN / totT * 100).toFixed(1)}%;background:#d97706"></div></div>
+  </div>
+  <div class="box">
+    <h3>Hotspot Genes (&#x2265;3 variants)</h3>
+    <table><tr><th>Gene ID</th><th>Status</th></tr>${hotspotRows}</table>
+  </div>
+</div>
+
+<h2>Trait Description</h2>
+<p style="font-size:12px;color:#374151;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:12px">${s ? s.description : 'N/A'}</p>
+
+<footer>Coffea arabica Variant Annotation Pipeline &nbsp;|&nbsp; ET-39 Reference (SouthGreen / CIRAD) &nbsp;|&nbsp; ${ts}</footer>
+</body></html>`;
+
+            const blob = new Blob([html], { type: 'text/html' });
+            const a2 = document.createElement('a');
+            a2.href = URL.createObjectURL(blob);
+            a2.download = `analytics_report_${currentTrait.replace(/[^a-z0-9]/gi, '_')}.html`;
+            a2.click();
+            URL.revokeObjectURL(a2.href);
+        }    
+    </script>
+
+
+</body>
+
+</html>

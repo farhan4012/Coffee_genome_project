@@ -1,0 +1,371 @@
+{
+  "counts": {
+    "Low Caffeine (lr)": 0,
+    "Coffee Leaf Rust (SH3)": 0,
+    "Coffee Berry Disease (Ck-1)": 0,
+    "Dwarfism & Compactness (Ct)": 6,
+    "Giant Bean Size (Mg)": 11
+  },
+  "variants": {
+    "Low Caffeine (lr)": [],
+    "Coffee Leaf Rust (SH3)": [],
+    "Coffee Berry Disease (Ck-1)": [],
+    "Dwarfism & Compactness (Ct)": [
+      {
+        "chromosome": "Chr01C",
+        "position": 46822313,
+        "reference": "AG",
+        "alternate": "AGCAAGG",
+        "geneId": "Cara001g015800",
+        "matchedKeywords": [
+          "della (High Confidence)"
+        ]
+      },
+      {
+        "chromosome": "Chr01C",
+        "position": 46822460,
+        "reference": "C",
+        "alternate": "G",
+        "geneId": "Cara001g015800",
+        "matchedKeywords": [
+          "della (High Confidence)"
+        ]
+      },
+      {
+        "chromosome": "Chr01C",
+        "position": 46822483,
+        "reference": "C",
+        "alternate": "T",
+        "geneId": "Cara001g015800",
+        "matchedKeywords": [
+          "della (High Confidence)"
+        ]
+      },
+      {
+        "chromosome": "Chr01C",
+        "position": 46822961,
+        "reference": "G",
+        "alternate": "C",
+        "geneId": "Cara001g015800",
+        "matchedKeywords": [
+          "della (High Confidence)"
+        ]
+      },
+      {
+        "chromosome": "Chr01C",
+        "position": 46823808,
+        "reference": "C",
+        "alternate": "A",
+        "geneId": "Cara001g015800",
+        "matchedKeywords": [
+          "della (High Confidence)"
+        ]
+      },
+      {
+        "chromosome": "Chr01C",
+        "position": 46823810,
+        "reference": "C",
+        "alternate": "A",
+        "geneId": "Cara001g015800",
+        "matchedKeywords": [
+          "della (High Confidence)"
+        ]
+      }
+    ],
+    "Giant Bean Size (Mg)": [
+      {
+        "chromosome": "Chr02C",
+        "position": 5535588,
+        "reference": "A",
+        "alternate": "T",
+        "geneId": "Cara003g048740",
+        "matchedKeywords": [
+          "auxin (High Confidence)"
+        ]
+      },
+      {
+        "chromosome": "Chr02C",
+        "position": 5535921,
+        "reference": "CAA",
+        "alternate": "CAAA",
+        "geneId": "Cara003g048740",
+        "matchedKeywords": [
+          "auxin (High Confidence)"
+        ]
+      },
+      {
+        "chromosome": "Chr02C",
+        "position": 5536174,
+        "reference": "G",
+        "alternate": "A",
+        "geneId": "Cara003g048740",
+        "matchedKeywords": [
+          "auxin (High Confidence)"
+        ]
+      },
+      {
+        "chromosome": "Chr02C",
+        "position": 5536604,
+        "reference": "GCACACACACAC",
+        "alternate": "GCACACACACACAC",
+        "geneId": "Cara003g048740",
+        "matchedKeywords": [
+          "auxin (High Confidence)"
+        ]
+      },
+      {
+        "chromosome": "Chr02C",
+        "position": 5536809,
+        "reference": "C",
+        "alternate": "T",
+        "geneId": "Cara003g048740",
+        "matchedKeywords": [
+          "auxin (High Confidence)"
+        ]
+      },
+      {
+        "chromosome": "Chr02C",
+        "position": 5536827,
+        "reference": "C",
+        "alternate": "T",
+        "geneId": "Cara003g048740",
+        "matchedKeywords": [
+          "auxin (High Confidence)"
+        ]
+      },
+      {
+        "chromosome": "Chr02C",
+        "position": 5537442,
+        "reference": "A",
+        "alternate": "C",
+        "geneId": "Cara003g048740",
+        "matchedKeywords": [
+          "auxin (High Confidence)"
+        ]
+      },
+      {
+        "chromosome": "Chr02E",
+        "position": 5669146,
+        "reference": "TAAAAAAAAAAAAAAA",
+        "alternate": "TAAAAAAAAAAAAAAAA",
+        "geneId": "Cara004g007820",
+        "matchedKeywords": [
+          "auxin (High Confidence)"
+        ]
+      },
+      {
+        "chromosome": "Chr02E",
+        "position": 5671048,
+        "reference": "A",
+        "alternate": "T",
+        "geneId": "Cara004g007820",
+        "matchedKeywords": [
+          "auxin (High Confidence)"
+        ]
+      },
+      {
+        "chromosome": "Chr02E",
+        "position": 21315269,
+        "reference": "G",
+        "alternate": "A",
+        "geneId": "Cara004g027760",
+        "matchedKeywords": [
+          "auxin (High Confidence)"
+        ]
+      },
+      {
+        "chromosome": "Chr02E",
+        "position": 21317780,
+        "reference": "G",
+        "alternate": "A",
+        "geneId": "Cara004g027760",
+        "matchedKeywords": [
+          "auxin (High Confidence)"
+        ]
+      }
+    ]
+  },
+  "traitSummary": {
+    "Low Caffeine (lr)": {
+      "candidateGenes": 21,
+      "description": "Tiered analysis targeting N-methyltransferase gene clusters (XMT, MXMT, DXMT) on chromosomes 1 and 9, which catalyse the four sequential methylation steps of caffeine biosynthesis. Variants in these loci are candidates for the recessive lr (low-caffeine) allele documented in Coffea arabica mutant lines."
+    },
+    "Coffee Leaf Rust (SH3)": {
+      "candidateGenes": 10,
+      "description": "Targets the SH3 resistance locus on Chr03C (3-16 Mbp) and the homeologous interval on Chr03E. The SH3 factor is linked to RGA3/RPP13-family NBS-LRR resistance proteins. Discovery tier captures these genes genome-wide using highly specific resistance protein identifiers."
+    },
+    "Coffee Berry Disease (Ck-1)": {
+      "candidateGenes": 0,
+      "description": "Targets the Ck-1 resistance interval on Chr01C and Chr01E (19.5-35 Mbp) for Colletotrichum kahawae resistance. All genes within this published QTL window are indexed positionally \u2014 keyword matching is attempted first, and genes with no annotation are included as 'Positional (Ck-1 locus)' candidates."
+    },
+    "Dwarfism & Compactness (Ct)": {
+      "candidateGenes": 83,
+      "description": "Genome-wide search for gibberellin and brassinosteroid pathway regulators governing the Ct (compactness) phenotype. Key gene families include DELLA repressors, gibberellin 20-oxidase, and the brassinosteroid receptor BRI1. Expanded across all chromosomes because GA pathway genes are distributed throughout the genome \u2014 not restricted to Chr01."
+    },
+    "Giant Bean Size (Mg)": {
+      "candidateGenes": 118,
+      "description": "Focuses on the Maragogipe (Mg) locus on Chr02, targeting genes involved in cell expansion, endosperm development, and seed size determination. Expansins and DA1/KLUH-family ubiquitin receptor proteins are the primary candidates."
+    }
+  },
+  "analytics": {
+    "Low Caffeine (lr)": {
+      "tiTvRatio": null,
+      "subgenomeBias": null,
+      "subgenomeCounts": {
+        "C": 0,
+        "E": 0
+      },
+      "hotspotGenes": [],
+      "highConfFraction": null,
+      "variantDensityPerMbp": null,
+      "clusterCount": 0,
+      "geneHitRate": null,
+      "tierCounts": {
+        "High Confidence": 0,
+        "Discovery": 0,
+        "Positional": 0
+      },
+      "snpCount": 0,
+      "insertionCount": 0,
+      "deletionCount": 0,
+      "mnpCount": 0
+    },
+    "Coffee Leaf Rust (SH3)": {
+      "tiTvRatio": null,
+      "subgenomeBias": null,
+      "subgenomeCounts": {
+        "C": 0,
+        "E": 0
+      },
+      "hotspotGenes": [],
+      "highConfFraction": null,
+      "variantDensityPerMbp": null,
+      "clusterCount": 0,
+      "geneHitRate": null,
+      "tierCounts": {
+        "High Confidence": 0,
+        "Discovery": 0,
+        "Positional": 0
+      },
+      "snpCount": 0,
+      "insertionCount": 0,
+      "deletionCount": 0,
+      "mnpCount": 0
+    },
+    "Coffee Berry Disease (Ck-1)": {
+      "tiTvRatio": null,
+      "subgenomeBias": null,
+      "subgenomeCounts": {
+        "C": 0,
+        "E": 0
+      },
+      "hotspotGenes": [],
+      "highConfFraction": null,
+      "variantDensityPerMbp": null,
+      "clusterCount": 0,
+      "geneHitRate": null,
+      "tierCounts": {
+        "High Confidence": 0,
+        "Discovery": 0,
+        "Positional": 0
+      },
+      "snpCount": 0,
+      "insertionCount": 0,
+      "deletionCount": 0,
+      "mnpCount": 0
+    },
+    "Dwarfism & Compactness (Ct)": {
+      "tiTvRatio": 0.25,
+      "subgenomeBias": 1.0,
+      "subgenomeCounts": {
+        "C": 6,
+        "E": 0
+      },
+      "hotspotGenes": [
+        "Cara001g015800"
+      ],
+      "highConfFraction": 1.0,
+      "variantDensityPerMbp": 0.12,
+      "clusterCount": 6,
+      "geneHitRate": 0.012,
+      "tierCounts": {
+        "High Confidence": 6
+      },
+      "snpCount": 5,
+      "insertionCount": 1,
+      "deletionCount": 0,
+      "mnpCount": 0
+    },
+    "Giant Bean Size (Mg)": {
+      "tiTvRatio": 1.667,
+      "subgenomeBias": 0.273,
+      "subgenomeCounts": {
+        "C": 7,
+        "E": 4
+      },
+      "hotspotGenes": [
+        "Cara003g048740"
+      ],
+      "highConfFraction": 1.0,
+      "variantDensityPerMbp": 0.22,
+      "clusterCount": 7,
+      "geneHitRate": 0.0254,
+      "tierCounts": {
+        "High Confidence": 11
+      },
+      "snpCount": 8,
+      "insertionCount": 3,
+      "deletionCount": 0,
+      "mnpCount": 0
+    }
+  },
+  "meta": {
+    "sourceFile": "variants_SRR9890309.vcf",
+    "timestamp": "2026-05-11 13:57:17.073509",
+    "totalVariants": 90310,
+    "contigsSeen": [
+      "Cara022_chrK_sgEE_A",
+      "Chr00C",
+      "Chr00E",
+      "Chr01C",
+      "Chr01E",
+      "Chr02C",
+      "Chr02E"
+    ],
+    "matchedContigs": [
+      "Chr01C",
+      "Chr01E",
+      "Chr02C",
+      "Chr02E"
+    ],
+    "unmatchedContigs": [
+      "Cara022_chrK_sgEE_A",
+      "Chr00C",
+      "Chr00E"
+    ],
+    "referenceContigs": [
+      "Chr01C",
+      "Chr01E",
+      "Chr02C",
+      "Chr02E",
+      "Chr03C",
+      "Chr03E",
+      "Chr04C",
+      "Chr04E",
+      "Chr05C",
+      "Chr05E",
+      "Chr06C",
+      "Chr06E",
+      "Chr07C",
+      "Chr07E",
+      "Chr08C",
+      "Chr08E",
+      "Chr09C",
+      "Chr09E",
+      "Chr10C",
+      "Chr10E",
+      "Chr11C",
+      "Chr11E"
+    ]
+  }
+}
